@@ -2,7 +2,7 @@ import sys
 import os
 import scipy.io.wavfile
 from config import OS
-import config
+import numpy
 VOKATURI_PATH = "OpenVokaturi-1-2"
 
 sys.path.append(os.path.join(VOKATURI_PATH, 'api'))
@@ -33,21 +33,36 @@ def _mkMono(samples):
         return samples[:,0]
     return samples
 
-def loadAudio(path = config.audio_path ):
-    (rate, samples) = scipy.io.wavfile.read(path)
-    samples = _mkMono(samples)
+SECONDS_PER_SLICE = 1
+def _sliceAudio(rate, samples):
+    slice_size = rate * SECONDS_PER_SLICE
+    indices = range(0, len(samples), slice_size)
+    return [samples[index:index+slice_size] for index in indices]
+
+def _extractFeatures(rate, samples):
     samp_len = len(samples)
     c_buffer = Vokaturi.SampleArrayC(samp_len)
     c_buffer[:] = samples[:] / PCM_MAX
+
     voice = Vokaturi.Voice(rate, samp_len)
     # Load audio into analyzer
     voice.fill(samp_len, c_buffer)
     # Analyze audio
     cue_strengths = Vokaturi.CueStrengths()
-    emotion_probabilities = Vokaturi.EmotionProbabilities()
-    voice.extract(None, cue_strengths, emotion_probabilities)
-    _printProps(cue_strengths)
-    _printProps(emotion_probabilities)
+
+    voice.extract(None, cue_strengths, None)
     voice.destroy()
-    return emotion_probabilities
-#TODO
+    return numpy.array([
+        cue_strengths.int_ave,
+        cue_strengths.int_slo,
+        cue_strengths.pit_ave,
+        cue_strengths.pit_slo,
+        cue_strengths.spc_slo])
+
+def getWavs(path):
+    return [os.path.join(path, x) for x in os.listdir(path) if x.endswith('.wav')]
+
+def loadAudio(path):
+    (rate, samples) = scipy.io.wavfile.read(path)
+    sample_slices = _sliceAudio(rate, _mkMono(samples))
+    return map(lambda x: _extractFeatures(rate, x), sample_slices)
