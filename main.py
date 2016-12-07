@@ -6,8 +6,10 @@ import numpy
 from loader import *
 from sklearn.neural_network import MLPClassifier
 import pickle
+import os
 
-
+CACHE_DIR = 'appCache'
+MODEL_FILE = os.path.join(CACHE_DIR, 'model.p')
 NUM_FLATTENERS = 4
 
 def listToQueue(in_list):
@@ -37,17 +39,25 @@ def learnNeural(a, b):
     classifier = MLPClassifier(solver='lbgfs', alpha=1e-1, hidden_layer_sizes=(5,2), random_state=1)
     return classifier.fit(X,y)
 
-
-if __name__ == "__main__":
-    #TODO: load saved model
+def trainModel():
     print "Activated", Vokaturi
-
     monotone_features = getFlatFeatures(getWavs(config.monotone_path))
     enthusiastic_features = getFlatFeatures(getWavs(config.enthusiastic_path))
     print "Extracted features"
 
     trained_model = learnNeural(monotone_features, enthusiastic_features)
-    print "model", trained_model
-# Save model
-    pickle.dump(trained_model, open('model.p', 'wb'))
+    print "Trained model", trained_model
+    return trained_model
 
+# Save model
+    pickle.dump(trained_model, open(MODEL_FILE, 'wb'))
+
+if __name__ == "__main__":
+    trained_model = None
+    if os.path.exists(MODEL_FILE):
+        print "Loading cached model"
+        trained_model = pickle.load(open(MODEL_FILE, 'rb'))
+    else:
+        trained_model = trainModel()
+
+    print "model", trained_model
