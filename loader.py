@@ -39,7 +39,7 @@ def _sliceAudio(rate, samples):
     indices = range(0, len(samples), slice_size)
     return [samples[index:index+slice_size] for index in indices]
 
-def _extractFeatures(rate, samples):
+def extractFeatures(rate, samples):
     samp_len = len(samples)
     c_buffer = Vokaturi.SampleArrayC(samp_len)
     c_buffer[:] = samples[:] / PCM_MAX
@@ -65,4 +65,4 @@ def getWavs(path):
 def loadAudio(path):
     (rate, samples) = scipy.io.wavfile.read(path)
     sample_slices = _sliceAudio(rate, _mkMono(samples))
-    return map(lambda x: _extractFeatures(rate, x), sample_slices)
+    return map(lambda x: extractFeatures(rate, x), sample_slices)

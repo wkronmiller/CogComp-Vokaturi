@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python -W ignore::DeprecationWarning
 import sys
 import scipy.io.wavfile
 import config
@@ -7,6 +7,7 @@ from loader import *
 from sklearn.neural_network import MLPClassifier
 import pickle
 import os
+from recorder import startLiveRecording
 
 CACHE_DIR = 'appCache'
 MODEL_FILE = os.path.join(CACHE_DIR, 'model.p')
@@ -35,8 +36,8 @@ def learnNeural(a, b):
     X = numpy.concatenate((a,b), axis=0)
     print "X", X.shape
 
-#TODO: tune parameters
-    classifier = MLPClassifier(solver='lbgfs', alpha=1e-1, hidden_layer_sizes=(5,2), random_state=1)
+#TODO: tune parameters (adam is optimized stochastic gradient descent, alpha is penalty,
+    classifier = MLPClassifier(solver='adam', alpha=1e-1, hidden_layer_sizes=(5,2))
     return classifier.fit(X,y)
 
 def trainModel():
@@ -47,10 +48,28 @@ def trainModel():
 
     trained_model = learnNeural(monotone_features, enthusiastic_features)
     print "Trained model", trained_model
+    # Save model
+    pickle.dump(trained_model, open(MODEL_FILE, 'wb'))
+    print "Cached model"
     return trained_model
 
-# Save model
-    pickle.dump(trained_model, open(MODEL_FILE, 'wb'))
+def testModel(trained_model):
+    monotone_features = numpy.array(getFlatFeatures(getWavs(config.monotone_path)))
+    print "Extracted monotone features"
+    prediction = trained_model.predict(monotone_features)
+    print "Generated prediction"
+    print "Error rate", float(len(filter(lambda x: x < 0, prediction))) / float(len(prediction))
+
+def _predictionToWord(prediction):
+    if prediction < 0:
+        return "Enthusiastic"
+    return "Boring"
+
+def predictLive(trained_model):
+    def featureCallback(live_features):
+        prediction = map(_predictionToWord, trained_model.predict(live_features))
+        print prediction
+    startLiveRecording(featureCallback)
 
 if __name__ == "__main__":
     trained_model = None
@@ -61,3 +80,8 @@ if __name__ == "__main__":
         trained_model = trainModel()
 
     print "model", trained_model
+    print "testing model"
+    #testModel(trained_model)
+
+    print "Live prediction"
+    predictLive(trained_model)
