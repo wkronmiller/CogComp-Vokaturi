@@ -46,12 +46,13 @@ def startLiveRecording(callback):
     stream = _mkStream(audio, rawCallback)
     stream.start_stream()
 
-    print "Waiting for stream to finish"
-    SLEEP_EXTRA = 5
-    time.sleep(config.record_seconds + SLEEP_EXTRA)
-    playing = False
+    if config.record_seconds is not None:
+        print "Waiting for stream to finish"
+        SLEEP_EXTRA = 5
+        time.sleep(config.record_seconds + SLEEP_EXTRA)
+        playing = False
     while stream.is_active():
-        time.sleep(.1)
+        time.sleep(.5)
     _cleanStream(stream, audio)
 
 if __name__ == "__main__":
