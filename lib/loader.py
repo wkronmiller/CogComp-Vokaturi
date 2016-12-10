@@ -6,7 +6,7 @@ import os
 import scipy.io.wavfile
 from config import OS
 import numpy
-VOKATURI_PATH = "OpenVokaturi-1-2"
+VOKATURI_PATH = "../OpenVokaturi-1-2"
 
 sys.path.append(os.path.join(VOKATURI_PATH, 'api'))
 import Vokaturi # pylint: disable=wrong-import-position,import-error

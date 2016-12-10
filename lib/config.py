@@ -6,8 +6,8 @@ OS = 'MAC'
 # OS = 'WIN32'
 # OS = 'WIN64'
 
-ENTHUSIASTIC_PATH = 'trainData/enthusiastic'
-MONOTONE_PATH = 'trainData/monotone'
+ENTHUSIASTIC_PATH = '../trainData/enthusiastic'
+MONOTONE_PATH = '../trainData/monotone'
 
 
 # Recorder config

@@ -14,7 +14,7 @@ from sklearn.neural_network import MLPClassifier # pylint: disable=import-error
 # Disable deprecation warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-CACHE_DIR = 'appCache'
+CACHE_DIR = '../appCache'
 MODEL_FILE = os.path.join(CACHE_DIR, 'model.p')
 NUM_FLATTENERS = 4
 
