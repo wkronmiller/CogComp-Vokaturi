@@ -1,41 +1,62 @@
+"""
+Handles recording of audio
+"""
+import time
 import pyaudio
 import config
 import numpy
-import time
-from loader import extractFeatures
+from loader import extract_features
 
-##TODO
-"""
-@ see https://people.csail.mit.edu/hubert/pyaudio/
-"""
+# see https://people.csail.mit.edu/hubert/pyaudio/
 CHUNK = 65536
 FORMAT = pyaudio.paInt16
 RATE = 44100
-
-def _cleanStream(stream, audio):
+# Time to wait before closing audio stream after finished
+SLEEP_EXTRA = 5
+def _clean_stream(stream, audio):
+    """
+    Close stream
+    """
     stream.stop_stream()
     stream.close()
     if audio is not None:
         audio.terminate()
 
-def _mkStream(audio, callback=None):
-    return audio.open(channels=1, format=FORMAT, frames_per_buffer=CHUNK, rate=RATE, input=True, stream_callback=callback)
+def _mk_stream(audio, callback=None):
+    """
+    Create audio stream
+    """
+    return audio.open(channels=1,
+                      format=FORMAT,
+                      frames_per_buffer=CHUNK,
+                      rate=RATE, input=True,
+                      stream_callback=callback)
 
-def getRecordingChunk():
+def get_recording_chunk():
+    """
+    Get a buffer of recording data
+    """
     audio = pyaudio.PyAudio()
     print "Starting recording..."
-    stream = _mkStream(audio)
-    frames = numpy.array([numpy.fromstring(stream.read(CHUNK), dtype=numpy.int16) for _ in range(int(RATE/CHUNK * config.record_seconds))])
+    stream = _mk_stream(audio)
+    frames = numpy.array([numpy.fromstring(stream.read(CHUNK), dtype=numpy.int16)
+                          for _ in range(int(RATE/CHUNK * config.RECORD_SECONDS))])
     print "Finished recording..."
-    _cleanStream(stream, audio)
+    _clean_stream(stream, audio)
 
-    return [extractFeatures(RATE, frame) for frame in frames]
+    return [extract_features(RATE, frame) for frame in frames]
 
-def startLiveRecording(callback):
+def start_live_recording(callback):
+    """
+    Start async audio processing
+    """
     playing = True
-    def rawCallback(in_data, num_frames, time_data, status_flags):
+    def raw_callback(in_data, *_):
+        """
+        Parse raw audio, extract features, call callback
+        """
         data = numpy.fromstring(in_data, dtype=numpy.int16)
-        features = extractFeatures(RATE, data)
+        features = extract_features(RATE, data)
         if callback is not None:
             callback(features)
         if playing:
@@ -43,20 +64,13 @@ def startLiveRecording(callback):
         return (None, pyaudio.paComplete)
     audio = pyaudio.PyAudio()
     print "Starting live handler"
-    stream = _mkStream(audio, rawCallback)
+    stream = _mk_stream(audio, raw_callback)
     stream.start_stream()
 
-    if config.record_seconds is not None:
+    if config.RECORD_SECONDS is not None:
         print "Waiting for stream to finish"
-        SLEEP_EXTRA = 5
-        time.sleep(config.record_seconds + SLEEP_EXTRA)
+        time.sleep(config.RECORD_SECONDS + SLEEP_EXTRA)
         playing = False
     while stream.is_active():
         time.sleep(.5)
-    _cleanStream(stream, audio)
-
-if __name__ == "__main__":
-    #print "Testing recorder"
-    #print getRecordingChunk()
-    print "Testing live recorder"
-    startLiveRecording(None)
+    _clean_stream(stream, audio)
