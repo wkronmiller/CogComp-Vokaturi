@@ -8,4 +8,5 @@ monotone_path = 'trainData/monotone'
 
 # Recorder config
 recorder_channels = 2
-record_seconds = 200
+#record_seconds = 200
+record_seconds = None
