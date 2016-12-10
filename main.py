@@ -68,7 +68,7 @@ def _predictionToWord(prediction):
 def predictLive(trained_model):
     def featureCallback(live_features):
         prediction = map(_predictionToWord, trained_model.predict(live_features))
-        print prediction
+        print "You are being", prediction
     startLiveRecording(featureCallback)
 
 if __name__ == "__main__":
@@ -80,8 +80,6 @@ if __name__ == "__main__":
         trained_model = trainModel()
 
     print "model", trained_model
-    print "testing model"
-    #testModel(trained_model)
 
     print "Live prediction"
     predictLive(trained_model)
