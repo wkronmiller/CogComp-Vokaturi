@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Program entrypoint script
+Start streaming audio from computer Mic to rabbit MQ
 """
 import sys
 from recorder import Recorder
