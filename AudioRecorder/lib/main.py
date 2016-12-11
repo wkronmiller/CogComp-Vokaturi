@@ -2,13 +2,9 @@
 """
 Start streaming audio from computer Mic to rabbit MQ
 """
-import sys
 from recorder import Recorder
-from rabbit_client import RabbitConnection
-from rabbit_client import AUDIO_EXCHANGE
-
-RABBIT_HOST = sys.argv[1]
-RABBIT_PORT = int(sys.argv[2])
+from rabbit_client import RabbitConnection, AUDIO_EXCHANGE
+from shared_config import RABBIT_HOST, RABBIT_PORT
 
 def main():
     """

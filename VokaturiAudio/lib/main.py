@@ -8,7 +8,9 @@ import warnings
 import config
 import numpy
 import loader
-import recorder
+import audio_processor
+from rabbit_client import RabbitConnection, AUDIO_EXCHANGE
+from shared_config import RABBIT_HOST, RABBIT_PORT
 from sklearn.neural_network import MLPClassifier # pylint: disable=import-error
 
 # Disable deprecation warnings
@@ -78,17 +80,12 @@ def _prediction_to_word(prediction):
         return "Enthusiastic"
     return "Boring"
 
-def predict_live(trained_model):
+def predict(trained_model, features):
     """
     Perform live prediction using trained model
     """
-    def feature_callback(live_features):
-        """
-        Maps audio features to classification
-        """
-        prediction = map(_prediction_to_word, trained_model.predict(live_features))
-        print "You are being", prediction
-    recorder.start_live_recording(feature_callback)
+    prediction = map(_prediction_to_word, trained_model.predict(features))
+    print "You are being", prediction
 
 def main():
     """
@@ -103,8 +100,35 @@ def main():
 
     print "model", trained_model
 
-    print "Live prediction"
-    predict_live(trained_model)
+    print "Connecting to rabbit"
+
+    client = RabbitConnection(RABBIT_HOST, RABBIT_PORT)
+
+    def _start_processing(channel):
+        def _handle_audio(*args):
+            audio_data = args[3]
+            features = audio_processor.extract_features_from_string(audio_data)
+            predict(trained_model, features)
+
+        def _start_consuming(_):
+            print "Starting to consume messages"
+            channel.basic_consume(_handle_audio, AUDIO_EXCHANGE)
+
+        def _handle_queue_bind(_):
+            print "Binding to queue"
+            channel.queue_bind(_start_consuming, AUDIO_EXCHANGE, AUDIO_EXCHANGE)
+
+        channel.queue_declare(_handle_queue_bind, AUDIO_EXCHANGE)
+        print "Starting to process audio"
+        channel.basic_consume(_handle_audio)
+
+    client.register_callback(_start_processing)
+
+    try:
+        client.start()
+    except KeyboardInterrupt:
+        pass
+    client.stop()
 
 if __name__ == "__main__":
     main()

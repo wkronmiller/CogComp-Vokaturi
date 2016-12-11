@@ -3,11 +3,11 @@ Handles recording of audio
 """
 import time
 import pyaudio
+from shared_config import RATE
 
 # see https://people.csail.mit.edu/hubert/pyaudio/
 CHUNK = 65536
 FORMAT = pyaudio.paInt16
-RATE = 44100
 # Time to wait before closing audio stream after finished
 SLEEP_EXTRA = 5
 
