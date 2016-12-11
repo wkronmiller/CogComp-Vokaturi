@@ -3,10 +3,14 @@ Responsible for loading data and extracting features using Vokaturi
 """
 import sys
 import os
+import pickle
+import multiprocessing
 import scipy.io.wavfile
 from config import OS
+import config
 import numpy
 VOKATURI_PATH = "../OpenVokaturi-1-2"
+
 
 sys.path.append(os.path.join(VOKATURI_PATH, 'api'))
 import Vokaturi # pylint: disable=wrong-import-position,import-error
@@ -38,7 +42,7 @@ def _mk_mono(samples):
         return samples[:, 0]
     return samples
 
-SECONDS_PER_SLICE = 1
+SECONDS_PER_SLICE = 5
 def _slice_audio(rate, samples):
     slice_size = rate * SECONDS_PER_SLICE
     indices = range(0, len(samples), slice_size)
@@ -60,12 +64,32 @@ def extract_features(rate, samples):
 
     voice.extract(None, cue_strengths, None)
     voice.destroy()
-    return numpy.array([
+    features = numpy.array([
         cue_strengths.int_ave,
         cue_strengths.int_slo,
         cue_strengths.pit_ave,
         cue_strengths.pit_slo,
         cue_strengths.spc_slo])
+    assert(len(features) == config.NUM_FEATURES)
+    return features
+
+def _get_flat_features(paths):
+    """
+    Get a list of extracted features
+    """
+    pool = multiprocessing.Pool(processes=config.LOADER_PROCESSES)
+    flat_features = pool.map(load_audio, paths)
+    return flat_features
+
+def get_feature_map():
+    """
+    Load features as map from class id to feature list
+    """
+    feature_map = {}
+    feature_map[config.MONOTONE_CLASS] = _get_flat_features(get_wavs(config.MONOTONE_PATH))
+    feature_map[config.ENTHUSIASTIC_CLASS] = _get_flat_features(get_wavs(config.ENTHUSIASTIC_PATH))
+    print "feature map", feature_map
+    return feature_map
 
 def get_wavs(path):
     """
@@ -77,6 +101,18 @@ def load_audio(path):
     """
     Load audio and extract features from files in specified path
     """
+    print "Loading audio from %s" % path
     (rate, samples) = scipy.io.wavfile.read(path)
     sample_slices = _slice_audio(rate, _mk_mono(samples))
-    return [extract_features(rate, x) for x in sample_slices]
+    extracted_features = [extract_features(rate, x) for x in sample_slices]
+    print "Done loading audio from %s" % path
+    return extracted_features
+
+def load_model():
+    """
+    Load pickled model from cache
+    """
+    if os.path.exists(config.MODEL_FILE):
+        print "Loading cached model"
+        return pickle.load(open(config.MODEL_FILE, 'rb'))
+    return None
