@@ -60,6 +60,28 @@ class RabbitConnection(object):
         self._channel_callbacks.append(callback)
         return len(self._channel_callbacks) - 1
 
+    def add_audio_incoming_callback(self, callback):
+        """
+        Register callback to recieve audio data
+        """
+        def _start_processing(channel):
+            def _handle_audio(*args):
+                audio_data = args[3]
+                callback(audio_data)
+
+            def _start_consuming(_):
+                print "Starting to consume messages"
+                channel.basic_consume(_handle_audio, AUDIO_EXCHANGE)
+
+            def _handle_queue_bind(_):
+                print "Binding to queue"
+                channel.queue_bind(_start_consuming, AUDIO_EXCHANGE, AUDIO_EXCHANGE)
+
+            channel.queue_declare(_handle_queue_bind, AUDIO_EXCHANGE)
+            print "Starting to process audio"
+            channel.basic_consume(_handle_audio, no_ack=True)
+        self._channel_callbacks.append(_start_processing)
+
     def start(self):
         """
         Start waiting for events

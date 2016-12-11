@@ -9,7 +9,7 @@ import config
 import numpy
 import loader
 import audio_processor
-from rabbit_client import RabbitConnection, AUDIO_EXCHANGE
+from rabbit_client import RabbitConnection
 from shared_config import RABBIT_HOST, RABBIT_PORT
 from sklearn.neural_network import MLPClassifier # pylint: disable=import-error
 
@@ -104,25 +104,11 @@ def main():
 
     client = RabbitConnection(RABBIT_HOST, RABBIT_PORT)
 
-    def _start_processing(channel):
-        def _handle_audio(*args):
-            audio_data = args[3]
-            features = audio_processor.extract_features_from_string(audio_data)
-            predict(trained_model, features)
+    def _handle_audio(audio_data):
+        features = audio_processor.extract_features_from_string(audio_data)
+        predict(trained_model, features)
 
-        def _start_consuming(_):
-            print "Starting to consume messages"
-            channel.basic_consume(_handle_audio, AUDIO_EXCHANGE)
-
-        def _handle_queue_bind(_):
-            print "Binding to queue"
-            channel.queue_bind(_start_consuming, AUDIO_EXCHANGE, AUDIO_EXCHANGE)
-
-        channel.queue_declare(_handle_queue_bind, AUDIO_EXCHANGE)
-        print "Starting to process audio"
-        channel.basic_consume(_handle_audio)
-
-    client.register_callback(_start_processing)
+    client.add_audio_incoming_callback(_handle_audio)
 
     try:
         client.start()
