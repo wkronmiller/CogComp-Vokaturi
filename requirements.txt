@@ -1,4 +1,4 @@
-scikit-learn==0.18.rc2
+scikit-learn==0.18.1
 youtube-dl
 pyaudio
 pika
