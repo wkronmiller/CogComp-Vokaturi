@@ -3,7 +3,8 @@ Configuration settings for project
 """
 import os
 
-OS = 'MAC'
+#OS = 'MAC'
+OS = 'LINUX64'
 # OS = 'WIN32'
 # OS = 'WIN64'
 
@@ -20,4 +21,4 @@ MODEL_FILE = os.path.join(CACHE_DIR, 'model.p')
 FEATURES_FILE = os.path.join(CACHE_DIR, 'features.p')
 
 # Number of processes used to extract audio features
-LOADER_PROCESSES = 10
+LOADER_PROCESSES = 100

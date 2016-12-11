@@ -23,6 +23,8 @@ def _get_lib_name():
         lib_name = 'Vokaturi_win32.dll'
     elif OS == 'WIN64':
         lib_name = 'Vokaturi_win64.dll'
+    elif OS == 'LINUX64':
+        lib_name = 'Vokaturi_linux64_rory.so'
     else:
         raise ValueError('Unknown operating system specified in config')
     return lib_name
@@ -78,7 +80,7 @@ def _get_flat_features(paths):
     Get a list of extracted features
     """
     pool = multiprocessing.Pool(processes=config.LOADER_PROCESSES)
-    flat_features = pool.map(load_audio, paths)
+    flat_features = [row for rows in pool.map(load_audio, paths) for row in rows]
     return flat_features
 
 def get_feature_map():
