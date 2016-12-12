@@ -13,20 +13,14 @@ from shared_config import RABBIT_HOST, RABBIT_PORT
 # Disable deprecation warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-# Confidence cutoff
-CUTOFF = .65
-
 def _prediction_to_word(prediction):
     """
     Convert predicted class to class's name
     """
-    print prediction
-    (prediction_class, [boring_confidence, enthus_confidence]) = prediction
-    if prediction_class == config.ENTHUSIASTIC_CLASS and enthus_confidence > CUTOFF:
+    if prediction == config.ENTHUSIASTIC_CLASS:
+        print config.ENTHUSIASTIC_CLASS, prediction
         return "Enthusiastic"
-    if prediction_class == config.MONOTONE_CLASS and boring_confidence > CUTOFF:
-        return "Boring"
-    return "Meh"
+    return "Boring"
 
 def predict(trained_model, features):
     """
@@ -35,7 +29,7 @@ def predict(trained_model, features):
     prediction = map(_prediction_to_word,
                      zip(trained_model.predict(features),
                          trained_model.predict_proba(features)))
-    print "You are being", prediction[0]
+    print "You are being", prediction
 
 def main():
     """

@@ -21,20 +21,24 @@ def _learn_neural(feature_map, **kwargs):
         x_n = numpy.array(feature_map[class_id])
         y_n = numpy.ones(len(x_n)) * float(class_id)
         print "Adding class %d" % float(class_id)
+        print y_n
         if x_all is None:
             x_all = x_n
             y_all = y_n
+            print "Initialized with class %d" % class_id
+            print y_all
         else:
             x_all = numpy.concatenate((x_all, x_n), axis=0)
             y_all = numpy.concatenate((y_all, y_n), axis=0)
-    print "y's", y_all
 
+    print "Training on %d points" % len(y_all)
 #TODO: tune parameters (adam is optimized stochastic gradient descent, alpha is penalty)
     classifier = MLPClassifier(**kwargs)
-    #classifier = svm.SVC(C=1000) #TODO: remove
-    return classifier.fit(x_all, y_all)
+    classifier = classifier.fit(x_all, y_all)
+    print "Score: ", classifier.score(x_all, y_all)
+    return classifier
 
-def train_model(feature_map=None, hidden_layer_sizes=(100, 9), **kwargs):
+def train_model(feature_map=None, hidden_layer_sizes=(100, 10), **kwargs):
     """
     Train neural network on audio in reference folders
     """
@@ -61,6 +65,7 @@ def test_model(trained_model, feature_map):
         feature_list = feature_map[classification]
         misclassification_count += len([x for x in trained_model.predict(feature_list)
                                        if int(numpy.sign(x)) != int(classification)]) # pylint: disable=no-member
+        print "Misclassified count", misclassification_count
         total_count += len(feature_list)
     return float(misclassification_count) / float(total_count)
 
@@ -75,7 +80,7 @@ def main():
         feature_map = loader.get_feature_map()
         pickle.dump(feature_map, open(config.FEATURES_FILE, 'wb'))
 
-    trained_model = train_model(feature_map, activation='tanh', max_iter=1000, learning_rate='adaptive')
+    trained_model = train_model(feature_map, early_stopping=True, validation_fraction=0.2, activation='tanh', max_iter=1000, learning_rate='adaptive')
 
     print "E_in:", test_model(trained_model, feature_map)
 

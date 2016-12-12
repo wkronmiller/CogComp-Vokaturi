@@ -90,7 +90,6 @@ def get_feature_map():
     feature_map = {}
     feature_map[config.MONOTONE_CLASS] = _get_flat_features(get_wavs(config.MONOTONE_PATH))
     feature_map[config.ENTHUSIASTIC_CLASS] = _get_flat_features(get_wavs(config.ENTHUSIASTIC_PATH))
-    print "feature map", feature_map
     return feature_map
 
 def get_wavs(path):
