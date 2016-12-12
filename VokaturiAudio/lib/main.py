@@ -13,21 +13,26 @@ from rabbit_client import RabbitConnection
 from shared_config import RABBIT_HOST, RABBIT_PORT
 
 # Disable deprecation warnings
-warnings.filterwarnings("ignore", category=DeprecationWarning)
+#warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+DECISION_THRESHOLD = .65
 
 def _prediction_to_word(prediction):
     """
     Convert predicted class to class's name
     """
-    if prediction == config.ENTHUSIASTIC_CLASS:
-        sys.stdout.write(config.ENTHUSIASTIC_CLASS, prediction)
-        return "Enthusiastic"
-    return "Boring"
+    (prediction_class, [boring_confidence, engaging_confidence]) = prediction
+    if prediction_class == config.ENTHUSIASTIC_CLASS and engaging_confidence > DECISION_THRESHOLD:
+        return "Engaging {0}".format(engaging_confidence)
+    if prediction_class == config.MONOTONE_CLASS and boring_confidence > DECISION_THRESHOLD:
+        return "Boring {0}".format(boring_confidence)
+    return "Meh"
 
 def predict(trained_model, features):
     """
     Perform live prediction using trained model
     """
+    features = features.reshape(1, -1)
     prediction = map(_prediction_to_word,
                      zip(trained_model.predict(features),
                          trained_model.predict_proba(features)))
