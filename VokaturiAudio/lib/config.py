@@ -2,11 +2,18 @@
 Configuration settings for project
 """
 import os
+import platform
 
+def _get_os():
+    return {
+        'Linux': 'LINUX64',
+        'Darwin': 'MAC'
+    }[platform.system()]
 #OS = 'MAC'
-OS = 'LINUX64'
+#OS = 'LINUX64'
 # OS = 'WIN32'
 # OS = 'WIN64'
+OS = _get_os()
 
 NUM_FEATURES = 5
 

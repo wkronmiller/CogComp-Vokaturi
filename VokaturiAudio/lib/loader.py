@@ -72,7 +72,7 @@ def extract_features(rate, samples):
         cue_strengths.pit_ave,
         cue_strengths.pit_slo,
         cue_strengths.spc_slo])
-    assert(len(features) == config.NUM_FEATURES)
+    assert len(features) == config.NUM_FEATURES
     return features
 
 def _get_flat_features(paths):

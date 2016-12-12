@@ -6,7 +6,6 @@ import os
 import pickle
 import numpy
 from sklearn.neural_network import MLPClassifier # pylint: disable=import-error
-from sklearn import svm
 import config
 import loader
 
@@ -64,7 +63,7 @@ def test_model(trained_model, feature_map):
     for classification in feature_map.keys():
         feature_list = feature_map[classification]
         misclassification_count += len([x for x in trained_model.predict(feature_list)
-                                       if int(numpy.sign(x)) != int(classification)]) # pylint: disable=no-member
+                                        if int(numpy.sign(x)) != int(classification)]) # pylint: disable=no-member
         print "Misclassified count", misclassification_count
         total_count += len(feature_list)
     return float(misclassification_count) / float(total_count)
@@ -80,7 +79,12 @@ def main():
         feature_map = loader.get_feature_map()
         pickle.dump(feature_map, open(config.FEATURES_FILE, 'wb'))
 
-    trained_model = train_model(feature_map, early_stopping=True, validation_fraction=0.2, activation='tanh', max_iter=1000, learning_rate='adaptive')
+    trained_model = train_model(feature_map,
+                                early_stopping=True,
+                                validation_fraction=0.2,
+                                activation='tanh',
+                                max_iter=1000,
+                                learning_rate='adaptive')
 
     print "E_in:", test_model(trained_model, feature_map)
 

@@ -11,5 +11,3 @@ def extract_features_from_string(in_data):
     """
     data = numpy.fromstring(in_data, dtype=numpy.int16)
     return loader.extract_features(RATE, data)
-
-
