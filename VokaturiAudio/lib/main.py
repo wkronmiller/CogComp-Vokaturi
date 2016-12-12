@@ -4,16 +4,12 @@ Driver for Vokaturi-based voice tone analyzer
 """
 import sys
 import time
-import warnings
 import config
 import loader
 import audio_processor
 import pika
 from rabbit_client import RabbitConnection
 from shared_config import RABBIT_HOST, RABBIT_PORT
-
-# Disable deprecation warnings
-#warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 DECISION_THRESHOLD = .65
 
@@ -26,7 +22,7 @@ def _prediction_to_word(prediction):
         return "Engaging {0}".format(engaging_confidence)
     if prediction_class == config.MONOTONE_CLASS and boring_confidence > DECISION_THRESHOLD:
         return "Boring {0}".format(boring_confidence)
-    return "Meh"
+    return "Meh (boring: {0}, engaging: {1})".format(boring_confidence, engaging_confidence)
 
 def predict(trained_model, features):
     """
