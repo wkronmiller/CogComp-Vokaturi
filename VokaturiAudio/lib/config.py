@@ -3,8 +3,8 @@ Configuration settings for project
 """
 import os
 
-#OS = 'MAC'
-OS = 'LINUX64'
+OS = 'MAC'
+#OS = 'LINUX64'
 # OS = 'WIN32'
 # OS = 'WIN64'
 
