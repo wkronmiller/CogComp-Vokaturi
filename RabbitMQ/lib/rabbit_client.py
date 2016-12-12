@@ -1,6 +1,7 @@
 """
 Client for RabbitMQ
 """
+import sys
 import pika
 
 def _on_channel(_):
@@ -18,15 +19,21 @@ class RabbitConnection(object):
     Connection handler for RabbitMQ
     """
 
+    def __make_client(self):
+        sys.stderr.write("Creating client\n")
+        self.connection = pika.adapters.select_connection \
+                                       .SelectConnection(parameters=pika \
+                                        .ConnectionParameters(self._hostname, self._port),
+                                                         on_open_callback=self._on_open,
+                                                         on_close_callback=self._on_close)
+        sys.stderr.write("Created client\n")
     def __init__(self, hostname, port):
         """
         Connect to RabbitMQ server with specified hostname and port
         """
-        self.connection = pika.adapters.select_connection \
-                                       .SelectConnection(parameters=pika \
-                                        .ConnectionParameters(hostname, port),
-                                                         on_open_callback=self._on_open,
-                                                         on_close_callback=self._on_close)
+        self._hostname = hostname
+        self._port = port
+        self.__make_client()
         self.connected = False
         self._channel_callbacks = [_on_channel]
 
@@ -42,7 +49,7 @@ class RabbitConnection(object):
         """
         Handler for connection creation
         """
-        print "RabbitMQ connection opened"
+        sys.stderr.write("RabbitMQ connection opened\n")
         self.connected = True
         self.connection.channel(self._on_channel)
 
@@ -50,7 +57,8 @@ class RabbitConnection(object):
         """
         Handler for connection closure
         """
-        print "Rabbit connection closed"
+        sys.stderr.write("Rabbit connection closed\n")
+        self.connection.ioloop.stop()
         self.connected = False
 
     def register_callback(self, callback):
@@ -70,7 +78,7 @@ class RabbitConnection(object):
                 callback(audio_data)
 
             def _start_consuming(_):
-                print "Starting to consume messages"
+                sys.stderr.write("Starting to consume messages\n")
                 channel.basic_consume(_handle_audio, AUDIO_EXCHANGE)
 
             def _handle_queue_bind(_):
@@ -86,10 +94,12 @@ class RabbitConnection(object):
         """
         Start waiting for events
         """
+        print "Starting client"
         self.connection.ioloop.start()
 
     def stop(self):
         """
         Close RabbitMQ connection
         """
+        self.connected = False
         self.connection.close()
