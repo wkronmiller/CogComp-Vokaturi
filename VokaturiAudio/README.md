@@ -12,7 +12,11 @@ In sample error 0.021953046953
 
 ### Validation-Set Performance
 
-TODO
+Misclassified count 53
+
+Misclassified count 14795
+
+Test error 0.261779641524
 
 ## Training Data
 

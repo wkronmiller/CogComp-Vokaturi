@@ -19,7 +19,9 @@ def _get_test_error(trained_model):
     """
     Get out-of-sample error
     """
+    print "Loading featurs"
     test_features = loader.get_feature_map(TEST_MONOTONE_PATH, TEST_ENTHUSIASTIC_PATH)
+    print "Calculating error"
     test_error = test_model(trained_model, test_features)
 
     print "Test error", test_error
