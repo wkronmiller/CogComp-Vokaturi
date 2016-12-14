@@ -14,7 +14,7 @@ from os import path
 import wave
 import pyaudio
 
-count
+count = 0
 audio_group = []
 
 
@@ -28,22 +28,20 @@ def _handle_audio(audio_data_):# pylint: disable=unused-argument
     global count
     global audio_group
 
-
-
     if count < 8:
         count += 1
-        print "gathering and joining audio... (part %d/8)" % count
+        print "Gathering and joining audio... (part %d/8)" % count
         audio_group.append(audio_data_)
     else:
 
         #!/usr/bin/env python3
         p = pyaudio.PyAudio()
-
+        print "Creating .wav file..."
         wf = wave.open("temp_audio.wav", 'wb')
         wf.setnchannels(1)
         wf.setsampwidth(p.get_sample_size(pyaudio.paInt16))
         wf.setframerate(44100)
-        wf.writeframes(b''.join(audio_group)
+        wf.writeframes(b''.join(audio_group))
         wf.close()
 
 
@@ -57,7 +55,7 @@ def _handle_audio(audio_data_):# pylint: disable=unused-argument
             audio = r.record(source) # read the entire audio file
 
 
-
+        print "Sending audio to Google API...\nWaiting for response..."
         # recognize speech using Google Speech Recognition
         try:
             # for testing purposes, we're just using the default API key
@@ -68,7 +66,8 @@ def _handle_audio(audio_data_):# pylint: disable=unused-argument
             print("Google Speech Recognition could not understand audio")
         except sr.RequestError as e:
             print("Could not request results from Google Speech Recognition service; {0}".format(e))
-
+        count = 0
+        print
 
 def main():
     """
