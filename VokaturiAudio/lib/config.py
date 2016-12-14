@@ -23,6 +23,10 @@ ENTHUSIASTIC_CLASS = 1.0
 MONOTONE_PATH = '../trainData/monotone'
 MONOTONE_CLASS = -1.0
 
+TEST_PATH = '../testData'
+TEST_MONOTONE_PATH = os.path.join(TEST_PATH, 'monotone')
+TEST_ENTHUSIASTIC_PATH = os.path.join(TEST_PATH, 'enthusiastic')
+
 CACHE_DIR = '../appCache'
 MODEL_FILE = os.path.join(CACHE_DIR, 'model.p')
 FEATURES_FILE = os.path.join(CACHE_DIR, 'features.p')
