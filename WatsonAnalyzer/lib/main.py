@@ -23,6 +23,7 @@ def _handle_audio(audio_data_):# pylint: disable=unused-argument
     """
     #print "TODO: process audio data thru watson here"
 
+    audio_group = []
     #!/usr/bin/env python3
     p = pyaudio.PyAudio()
 
