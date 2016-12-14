@@ -2,6 +2,8 @@
 Client for RabbitMQ
 """
 import sys
+import random
+import string
 import pika
 
 def _on_channel(_):
@@ -72,6 +74,7 @@ class RabbitConnection(object):
         """
         Register callback to recieve audio data
         """
+        queue_name = ''.join([random.choice(string.ascii_letters) for _ in range(10)])
         def _start_processing(channel):
             def _handle_audio(*args):
                 audio_data = args[3]
@@ -79,15 +82,20 @@ class RabbitConnection(object):
 
             def _start_consuming(_):
                 sys.stderr.write("Starting to consume messages\n")
-                channel.basic_consume(_handle_audio, AUDIO_EXCHANGE)
+                channel.basic_consume(_handle_audio, queue=queue_name)
 
             def _handle_queue_bind(_):
                 print "Binding to queue"
-                channel.queue_bind(_start_consuming, AUDIO_EXCHANGE, AUDIO_EXCHANGE)
+                channel.queue_bind(callback=_start_consuming,
+                                   queue=queue_name,
+                                   exchange=AUDIO_EXCHANGE)
 
-            channel.queue_declare(_handle_queue_bind, AUDIO_EXCHANGE)
-            print "Starting to process audio"
-            channel.basic_consume(_handle_audio, no_ack=True)
+            channel.queue_declare(callback=_handle_queue_bind,
+                                  queue=queue_name,
+                                  exclusive=True,
+                                  auto_delete=True)
+            print "Starting to process audio in queue %s" % queue_name
+            #channel.basic_consume(_handle_audio, queue_name, no_ack=True)
         self._channel_callbacks.append(_start_processing)
 
     def start(self):
