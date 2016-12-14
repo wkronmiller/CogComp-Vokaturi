@@ -4,3 +4,5 @@ numpy
 youtube-dl
 pyaudio
 pika
+watson_developer_cloud
+SpeechRecognitio
