@@ -83,13 +83,13 @@ def _get_flat_features(paths):
     flat_features = [row for rows in pool.map(load_audio, paths) for row in rows]
     return flat_features
 
-def get_feature_map():
+def get_feature_map(monotone_path=config.MONOTONE_PATH, enthus_path=config.ENTHUSIASTIC_PATH):
     """
     Load features as map from class id to feature list
     """
     feature_map = {}
-    feature_map[config.MONOTONE_CLASS] = _get_flat_features(get_wavs(config.MONOTONE_PATH))
-    feature_map[config.ENTHUSIASTIC_CLASS] = _get_flat_features(get_wavs(config.ENTHUSIASTIC_PATH))
+    feature_map[config.MONOTONE_CLASS] = _get_flat_features(get_wavs(monotone_path))
+    feature_map[config.ENTHUSIASTIC_CLASS] = _get_flat_features(get_wavs(enthus_path))
     return feature_map
 
 def get_wavs(path):
