@@ -1,5 +1,19 @@
 # CogComp-Vokaturi
 
+## Performance
+
+### In-Sample Performance
+
+Misclassified count 452
+
+Misclassified count 879
+
+In sample error 0.021953046953
+
+### Validation-Set Performance
+
+TODO
+
 ## Training Data
 
 The enthusiastic/engaging training data is the TED Talks top 10 videos as well as a HipHop accapella
